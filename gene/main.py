@@ -42,7 +42,7 @@ def calculate_fitness(population):
 
 # ======= 选择操作(轮盘赌) =======
 '''适应度越高的个体占据轮盘上越大的区域，被随机数命中的概率越大。'''
-def select_parents(population,fitnesee):
+def select_parents(population,fitness):
     ''' 根据适应度选择两个父代 '''
     total_fitness = sum(fitness)
     # 计算累积概率分布
@@ -76,10 +76,56 @@ def crossover(parent1,parent2):
 def mutate(child):
     '''每个基因位按位概率翻转'''
     mutated = list(child)
-    for i in range(len(mutated))
+    for i in range(len(mutated)):
+        if random.random() < MUTATION_RATE:
+            mutated[i] = '1' if mutated[i] == '0' else '0'
+    return ''.join(mutated)
+# ======= 主算法流程 =======
+def genetic_algorithm():
+    # 初始化种群
+    population = initialize_population()
+    best_fitness_history = [] # 记录每代最佳适应度
+    for generation in range(MAX_GENERATIONS):
+        # 计算适应度
+        fitness = calculate_fitness(population)
+        best_fitness = max(fitness)
+        best_fitness_history.append(best_fitness)
 
-population =  initialize_population()
-fitness = calculate_fitness(population)
-print(population)
-print(fitness)
-select_parents(population,fitness)
+        # 生成新一代种群
+        new_population = []
+
+        # 保留精英（最优个体直接进入下一代）
+        best_index = fitness.index(best_fitness)
+        new_population.append(population[best_index])
+
+        # 生成剩余个体
+        while(len(new_population) < POPULATION_SIZE):
+            # 选择父代
+            parents = select_parents(population,fitness)
+            # 交叉生成子代
+            child1,child2 = crossover(parents[0],parents[1])
+            # 变异
+            child1 = mutate(child1)
+            child2 = mutate(child2)
+
+            # 加入新种群
+            new_population.extend([child1,child2])
+
+        # 打印进度
+        if generation % 10 == 0:
+            best_x = binary_to_decimal(population[best_index])
+            print(f"Generation {generation}: Best x = {best_x},f(x)={best_fitness}")
+
+        # 确保种群大小不变
+        population = new_population[:POPULATION_SIZE]
+
+
+    # 最终结果
+    best_individual = population[fitness.index(max(fitness))]
+    best_x = binary_to_decimal(best_individual)
+    return best_x,best_fitness_history
+
+if __name__ == "__main__":
+    best_x,history = genetic_algorithm()
+    print("\n=========最终结果=============")
+    print(f"最优解 x = {best_x},f(x) = {fitness_function(best_x)}")
