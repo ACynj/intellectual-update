@@ -4,7 +4,16 @@ import numpy as np
 def sphere_function(x):
     return sum(x**2)
 
-def differential_evolution(func,bounds,NP=50,F=0.8,CR=0.9,max_iter=100):
+# 作业要求的函数
+def f(x):
+    x1, x2 = x
+    sum1 = 0
+    sum2 = 0
+    for i in range(1, 6):
+        sum1 += i * np.cos((i + 1) * x1 + i)
+        sum2 += i * np.cos((i + 1) * x2 + i)
+    return sum1 * sum2
+def differential_evolution(func,bounds,NP=50,F=0.6,CR=0.9,max_iter=100):
     '''
     差分进化算法实现
 
@@ -29,7 +38,7 @@ def differential_evolution(func,bounds,NP=50,F=0.8,CR=0.9,max_iter=100):
     # 初始化种群
     population = min_bounds + np.random.rand(NP,D) * (max_bounds - min_bounds)
     fitness = np.array([func(ind) for ind in population])
-    best_idx = np.argmin(fitness)
+    best_idx = np.argmax(fitness)
     best_solution = population[best_idx]
     best_fitness = fitness[best_idx]
 
@@ -49,16 +58,16 @@ def differential_evolution(func,bounds,NP=50,F=0.8,CR=0.9,max_iter=100):
 
             # 选择，贪婪保留更优解
             trial_fitness = func(trial)
-            if trial_fitness < fitness[i]:
+            if trial_fitness > fitness[i]:
                 population[i] = trial
                 fitness[i] = trial_fitness
-                if trial_fitness < best_fitness:
+                if trial_fitness > best_fitness:
                     best_fitness = trial_fitness
                     best_solution = trial.copy()
         print(f"Iter {iter + 1},solution:{best_solution},Best Fitness:{best_fitness:.6f}")
     return best_solution,best_fitness
 
 if __name__ == "__main__":
-    bounds = [(-5,5)] * 10
-    best_sol,best_val = differential_evolution(sphere_function,bounds,max_iter=100)
+    bounds = [(-10,10)] * 2
+    best_sol,best_val = differential_evolution(f,bounds,NP=50,max_iter=500)
     print(f"\n最优解:{best_sol}\n最优值{best_val}")
